@@ -1,0 +1,8 @@
+// Primeras 2 horas practica de python basics
+
+Ejercicios de la clase:
+
+- Ejercicio de transformacion de listas
+- Ejercicio de muestra de graficos con matplotlib
+- Ejercicio numpy matrix multiplicar 2 matrices y demostrar que es la matriz identidad
+- Ejercicio de pandas (cargar el csv, obtener el dataframe, crear una columna derivada de la masa entre(/) el numero atomico)
