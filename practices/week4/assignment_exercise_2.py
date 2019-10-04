@@ -7,6 +7,8 @@ import sklearn.linear_model
 with open("../datasets/mnist_dataset_unscaled.pickle", "rb") as f:
       train_data, train_labels, test_data, test_labels = pickle.load(f)
 
+print(test_labels)
+
 # Scale the training and test data
 pixel_mean = np.mean(train_data)
 pixel_std = np.std(train_data)
