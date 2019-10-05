@@ -69,8 +69,6 @@ training_rmse = mse_val ** .5
 print("Training RMSE: {:.1f}".format(training_rmse))
 
 
-
-
 X_test = tf.constant(test_data.values.astype(np.float32))
 Y_test = tf.constant(test_labels.values.reshape(-1,1).astype(np.float32))
 Y_pred_test = tf.add(tf.matmul(X_test, W), b)

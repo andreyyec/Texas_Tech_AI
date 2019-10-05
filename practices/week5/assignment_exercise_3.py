@@ -7,7 +7,7 @@ import tensorflow as tf
 
 # Load the training and test data from the Pickle file
 with open("../datasets/mnist_dataset_unscaled.pickle", "rb") as f:
-      train_data, train_labels, test_data, test_labels = pickle.load(f)
+    train_data, train_labels, test_data, test_labels = pickle.load(f)
 
 # Scale the training and test data
 pixel_mean = np.mean(train_data)
@@ -26,20 +26,24 @@ n_inputs = train_data.shape[1]
 nsamples = train_data.shape[0]
 
 # Training constants
-learning_rate = .3
-n_iterations = 10000
+batch_size = 6000
+learning_rate = .2
+n_epochs = 1000
 print_step = 100
 
-# TensorFlow constants
+n_batches = int(np.ceil(nsamples / batch_size))
 
-# Input data matrices
-X = tf.constant(train_data.astype(np.float32))
-Y = tf.constant(train_labels_onehot.astype(np.float32))
+# Print the configuration
+print("Batch size: {} Num batches: {} Learning rate: {}".format(batch_size, n_batches, learning_rate))
+
+# Input vector placeholders. Length is unspecified.
+X = tf.placeholder(tf.float32, shape=(None, n_inputs), name="X")
+Y = tf.placeholder(tf.float32, shape=(None, num_classes), name="Y")
 
 # Initial coefficients & bias
 
-# Start with uniformly random values
-W = tf.Variable(tf.random_uniform([n_inputs, num_classes], -1.0, 1.0))
+# Start with random values that follow a normal distribution (Xavier's initialization)
+W = tf.Variable(tf.truncated_normal([n_inputs, num_classes], stddev=1 / np.sqrt(n_inputs)))
 
 # Start with zero biases
 b = tf.Variable(tf.zeros(num_classes))
@@ -51,39 +55,55 @@ Y_linear = tf.add(tf.matmul(X, W), b)
 
 # Cost function, plus the softmax part of the prediction
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
-                    logits = Y_linear, labels = Y))
+    logits=Y_linear, labels=Y))
 
 # Optimize cost through gradient descent
 optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 update_op = optimizer.minimize(cost)
 
-# Prediction against training set (with the softmax)
-Y_pred_proba_training = tf.nn.softmax(Y_linear)
-Y_pred_training_calc = tf.argmax(Y_pred_proba_training, 1)
-
-# Prediction against the test test
-X_test = tf.constant(test_data.astype(np.float32))
-Y_pred_proba_test = tf.nn.softmax(tf.add(tf.matmul(X_test, W), b))
-Y_pred_test_calc = tf.argmax(Y_pred_proba_test, 1)
+# Prediction values
+Y_pred_proba = tf.nn.softmax(Y_linear)
+Y_pred_calc = tf.argmax(Y_pred_proba, 1)
 
 # Create TensorFlow session and initialize it
 sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 
-iteration = 0
-while iteration < n_iterations:
-    # Run one iteration of the computation session to update coefficients
-    _, cost_val = sess.run([update_op, cost])
-    if (iteration % print_step == 0):
-        print("iteration {:4d}:  Cost: {:.4f}".format(iteration, cost_val))
-    iteration += 1
+epoch = 0
+
+while epoch < n_epochs:
+    batch = 0
+    # Save a vector of cost values per batch
+    cost_vals = np.zeros(n_batches)
+
+    while batch < n_batches:
+
+        # Select the data for the next batch
+        dataidx = batch * batch_size
+        X_batch = train_data[dataidx:(dataidx+batch_size)]
+        Y_batch = train_labels_onehot[dataidx:(dataidx+batch_size)]
+        feed_dict = {X: X_batch, Y: Y_batch}
+
+        # Run one iteration of the computation session to update coefficients
+        _, cost_vals[batch] = sess.run([update_op, cost], feed_dict=feed_dict)
+        batch += 1
+
+    # Print statistics about the cost measured in all the batches
+    if (epoch % print_step == 0):
+        print("Epoch {:4d}: Min cost: {:6.4f} Max cost: {:6.4f} Avg cost: {:6.4f}".format(epoch,\
+            np.min(cost_vals),
+            np.max(cost_vals),
+            np.mean(cost_vals)))
+    epoch += 1
 
 # Run a session to compute the predictions against the training data
-Y_pred_training = sess.run(Y_pred_training_calc)
+feed_dict = {X: train_data, Y: train_labels_onehot}
+Y_pred_training = sess.run(Y_pred_calc, feed_dict=feed_dict)
 
 # Run a session to compute the predictions against the test data
-Y_pred_test = sess.run(Y_pred_test_calc)
+feed_dict = {X: test_data, Y: test_labels_onehot}
+Y_pred_test = sess.run(Y_pred_calc, feed_dict=feed_dict)
 
 # Accuracy, precision & recall
 print("Accuracy:   {:.4f}".format(sklearn.metrics.accuracy_score(test_labels, Y_pred_test)))
