@@ -57,7 +57,9 @@ Y = tf.placeholder(tf.float32, shape=(None, num_classes), name="Y")
 #   Activation: tanh
 W_L1 = tf.Variable(tf.truncated_normal([n_inputs, n_nodes_l1], stddev=1 / np.sqrt(n_inputs)))
 b_L1 = tf.Variable(tf.zeros(n_nodes_l1))
-Y_L1 = tf.nn.tanh(tf.add(tf.matmul(X, W_L1), b_L1))
+#Y_L1 = tf.nn.tanh(tf.add(tf.matmul(X, W_L1), b_L1))
+Y_L1 = tf.nn.relu(tf.add(tf.matmul(X, W_L1), b_L1))
+#Y_L1 = tf.nn.elu(tf.add(tf.matmul(X, W_L1), b_L1))
 
 # Output layer:
 #   Inputs: n_nodes_l1

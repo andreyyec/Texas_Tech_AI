@@ -14,20 +14,17 @@ n_inputs = train_data.shape[1]
 nsamples = train_data.shape[0]
 
 # Training constants
-n_nodes_l1 = 100
+n_nodes_l1 = 5
 batch_size = 32
 learning_rate = .001    # Initial rate for Adam
 n_epochs = 1000
-eval_step = 10
-regularization_scale = 5e-5
-#[1e-8, 1e-6, 1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 1e-2, 1e-1, 1.0]
+eval_step = 5
 
 n_batches = int(np.ceil(nsamples / batch_size))
 
 # Print the configuration
 print("Batch size: {} Num batches: {} Num epochs: {} Learning rate: {}".format(batch_size, n_batches, n_epochs, learning_rate))
 print("Num nodes in L1: {} Activation function: ELU".format(n_nodes_l1))
-print("Regularization scale: {}  Regularization type: L1".format(regularization_scale))
 
 # TensorFlow constants
 
@@ -41,7 +38,8 @@ Y = tf.placeholder(tf.float32, shape=(None, 1), name="Y")
 #   Activation: ELU
 W_L1 = tf.Variable(tf.truncated_normal([n_inputs, n_nodes_l1], stddev=2/np.sqrt(n_inputs)))
 b_L1 = tf.Variable(tf.zeros(n_nodes_l1))
-Y_L1 = tf.nn.elu(tf.add(tf.matmul(X, W_L1), b_L1))
+#Y_L1 = tf.nn.elu(tf.add(tf.matmul(X, W_L1), b_L1))
+Y_L1 = tf.nn.relu(tf.add(tf.matmul(X, W_L1), b_L1))
 
 # Output layer:
 #   Inputs: n_nodes_l1
@@ -52,12 +50,8 @@ b_L2 = tf.Variable(tf.zeros(1))
 Y_L2_linear = tf.add(tf.matmul(Y_L1, W_L2), b_L2)
 
 # Cost function, plus the sigmoid part of the prediction
-base_cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
         logits = Y_L2_linear, labels = Y))
-#regularization_cost = tf.reduce_sum(tf.square(W_L1)) + tf.reduce_sum(tf.square(W_L2))
-regularization_cost = tf.reduce_sum(tf.abs(W_L1)) + tf.reduce_sum(tf.abs(W_L2))
-cost = regularization_cost * regularization_scale + base_cost
-
 
 # Optimize cost through gradient descent
 #optimizer = tf.train.GradientDescentOptimizer(learning_rate)

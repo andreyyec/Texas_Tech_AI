@@ -6,7 +6,7 @@ import sklearn.metrics
 import matplotlib.pyplot as plt
 
 # Load the training and test data from the Pickle file
-with open("credit_card_default_dataset.pickle", "rb") as f:
+with open("../datasets/credit_card_default_dataset.pickle", "rb") as f:
       train_data, train_labels, test_data, test_labels = pickle.load(f)
 
 # Get some lengths
@@ -14,7 +14,7 @@ n_inputs = train_data.shape[1]
 nsamples = train_data.shape[0]
 
 # Training constants
-n_nodes_l1 = 12
+n_nodes_l1 = 5
 batch_size = 32
 learning_rate = .001    # Initial rate for Adam
 n_epochs = 1000
@@ -38,7 +38,8 @@ Y = tf.placeholder(tf.float32, shape=(None, 1), name="Y")
 #   Activation: ELU
 W_L1 = tf.Variable(tf.truncated_normal([n_inputs, n_nodes_l1], stddev=2/np.sqrt(n_inputs)))
 b_L1 = tf.Variable(tf.zeros(n_nodes_l1))
-Y_L1 = tf.nn.relu(tf.add(tf.matmul(X, W_L1), b_L1))
+Y_L1 = tf.nn.elu(tf.add(tf.matmul(X, W_L1), b_L1))
+#Y_L1 = tf.nn.relu(tf.add(tf.matmul(X, W_L1), b_L1))
 
 # Output layer:
 #   Inputs: n_nodes_l1

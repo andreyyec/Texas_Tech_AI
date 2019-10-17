@@ -19,7 +19,7 @@ batch_size = 32
 learning_rate = .001    # Initial rate for Adam
 n_epochs = 1000
 eval_step = 10
-regularization_scale = 5e-5
+regularization_scale = 1e-1
 #[1e-8, 1e-6, 1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 1e-2, 1e-1, 1.0]
 
 n_batches = int(np.ceil(nsamples / batch_size))
